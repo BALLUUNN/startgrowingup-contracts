@@ -3,7 +3,7 @@
 
 <!--
 ![CI](https://img.shields.io/github/actions/workflow/status/company/service-api/ci.yml)
-![License](https://img.shields.io/github/license/company/service-api)
+![License](https://img.shields.io/github/license/BALLUUNN/StartGrowUp)
 ![Release](https://img.shields.io/github/v/release/company/service-api)
 -->
 
@@ -11,7 +11,7 @@
 
 ---
 
-# О проекте
+# О репозитории
 
 Данный репозиторий является **единым источником истины (Single Source of Truth)** для API-контрактов сервиса.
 

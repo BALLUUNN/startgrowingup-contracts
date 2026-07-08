@@ -164,3 +164,29 @@ jobs:
           mvn -q -f /tmp/java-smoke-pom.xml dependency:build-classpath -Dmdep.outputFile=/tmp/java-smoke.classpath
           mkdir -p /tmp/java-smoke-build
           javac -cp "$(cat /tmp/java-smoke.classpath)" -d /tmp/java-smoke-build $(find gen/java -name "*.java")
+
+  openapi-validate:
+    name: OpenAPI Validate
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Buf
+        uses: bufbuild/buf-setup-action@v1.50.0
+        with:
+          github_token: ${{ github.token }}
+
+      - name: Generate code
+        run: buf generate
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+
+      - name: Validate OpenAPI
+        run: |
+          npm install --no-save @apidevtools/swagger-cli
+          npx swagger-cli validate gen/openapi/api.swagger.json

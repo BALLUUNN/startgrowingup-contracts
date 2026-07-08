@@ -1,12 +1,14 @@
 # StartGrowingUp Contracts
 
-Репозиторий `BALLUUNN/startgrowingup-contracts` хранит protobuf-контракты и generated outputs для сервисов и клиентов StartGrowingUp.
+Репозиторий `BALLUUNN/startgrowingup-contracts` хранит protobuf-контракты StartGrowingUp и публикует их в Buf Schema Registry как модуль `buf.build/balluunns/startgrowingup-contracts`.
+
+Source of truth в репозитории - файлы `.proto`. Каталог `gen/` используется только как локальный output для проверки генерации и не является каноническим способом доставки SDK потребителям.
 
 ## Что внутри
 
 - исходные `.proto`-контракты в `proto/`;
 - конфигурация генерации и проверки через `buf`;
-- generated code для Go, Python, Java и TypeScript;
+- локальная генерация SDK для Go, Python, Java и TypeScript;
 - OpenAPI-артефакт, собранный из protobuf-аннотаций;
 - документация по стилю и процессу внесения изменений.
 
@@ -21,18 +23,14 @@
 │       └── v1/
 │           ├── auth.proto
 │           └── README.md
-├── gen/
-│   ├── go/
-│   ├── java/
-│   ├── openapi/
-│   ├── python/
-│   └── typescript/
 ├── buf.yaml
 ├── buf.gen.yaml
 ├── Makefile
 ├── README.md
 ├── CONTRIBUTING.md
 ├── STYLE.md
+├── site/
+│   └── index.html
 └── CHANGELOG.md
 ```
 
@@ -43,8 +41,9 @@
 ```bash
 make format
 make generate
-make test-go
+make test-generated
 make verify
+make check
 ```
 
 Аналоги через `buf`:
@@ -56,9 +55,9 @@ buf breaking --against 'https://github.com/BALLUUNN/startgrowingup-contracts.git
 buf generate
 ```
 
-Файлы в `gen/` не редактируются вручную.
+Файлы в `gen/` не редактируются вручную и не считаются публичным каналом доставки SDK.
 
-## Generated outputs
+## Локальные generated outputs
 
 После `buf generate` обновляются:
 
@@ -68,29 +67,100 @@ buf generate
 - `gen/typescript/auth/v1`
 - `gen/openapi/api.swagger.json`
 
-## Использование
+Эти артефакты нужны для smoke-проверок, локальной разработки и валидации generation pipeline. Consumers должны забирать версии SDK из BSR, а не из Git.
+
+## Использование через BSR
+
+Основной модуль:
+
+```text
+buf.build/balluunns/startgrowingup-contracts
+```
+
+BSR генерирует SDK для каждого опубликованного коммита и тега. Для production лучше пинить зависимость на конкретную версию, label или commit, а не оставлять `latest`.
+
+Ниже приведены примеры, которые я сверил с реально доступными BSR package ecosystems для этого модуля. Если на вкладке `SDKs` BSR команда отличается, ориентируйтесь на BSR UI как на источник истины.
 
 ### Go
 
-```bash
-go get github.com/BALLUUNN/startgrowingup-contracts
+Для этого модуля публичный Go SDK из BSR в автоматической проверке не разрешился через `go list` и `@v/list`, поэтому здесь оставлен только формат пути из документации Buf:
+
+```text
+buf.build/gen/go/balluunns/startgrowingup-contracts/{pluginOwner}/{pluginName}
 ```
 
-```go
-import authv1 "github.com/BALLUUNN/startgrowingup-contracts/gen/go/auth/v1"
-```
+Перед публикацией consumer-инструкций для Go проверьте точную install-команду на вкладке `SDKs` в BSR. Если нужен надежный BSR-first сценарий для Go, может потребоваться отдельно пересмотреть `go_package` strategy.
 
 ### Python
 
-Python bindings лежат в `gen/python`. Для импорта нужен установленный runtime `protobuf`, а также зависимости generated-кода.
+Добавьте BSR Python index:
+
+```ini
+[global]
+extra-index-url = https://buf.build/gen/python
+```
+
+Установка:
+
+```bash
+pip install balluunns-startgrowingup-contracts-protocolbuffers-python
+pip install balluunns-startgrowingup-contracts-grpc-python
+```
+
+Проверенные package names:
+
+```text
+balluunns-startgrowingup-contracts-protocolbuffers-python
+balluunns-startgrowingup-contracts-grpc-python
+```
+
+Для production фиксируйте версию в `requirements.txt` или lock-файле.
 
 ### Java
 
-Java bindings лежат в `gen/java/com/balluunn/startgrowingup/auth/v1`.
+Добавьте BSR Maven registry:
+
+```xml
+<repositories>
+  <repository>
+    <id>buf</id>
+    <url>https://buf.build/gen/maven</url>
+  </repository>
+</repositories>
+```
+
+Формат координат:
+
+```xml
+<dependency>
+  <groupId>build.buf.gen</groupId>
+  <artifactId>balluunns_startgrowingup-contracts_protocolbuffers_java</artifactId>
+  <version>&lt;pinned BSR version&gt;</version>
+</dependency>
+```
+
+Для gRPC-стабов используйте отдельный артефакт:
+
+```xml
+<dependency>
+  <groupId>build.buf.gen</groupId>
+  <artifactId>balluunns_startgrowingup-contracts_grpc_java</artifactId>
+  <version>&lt;pinned BSR version&gt;</version>
+</dependency>
+```
+
+Для production используйте фиксированную `version`, а не плавающие диапазоны.
 
 ### TypeScript
 
-TypeScript bindings лежат в `gen/typescript/auth/v1` и рассчитаны на `@grpc/grpc-js`.
+Текущий TypeScript plugin `buf.build/community/stephenh-ts-proto` не привязан к package ecosystem в BSR, поэтому native `npm install` для этого generated SDK сейчас не публикуется. Для TypeScript у тебя сейчас два реалистичных варианта:
+
+- продолжать использовать локальный `buf generate` и распространять generated TS-код отдельно от BSR;
+- перейти на plugin, для которого BSR публикует npm SDK, если нужен полноценный BSR-first install flow.
+
+### OpenAPI
+
+OpenAPI-файл генерируется локально как `gen/openapi/api.swagger.json`, валидируется в CI, прикладывается к GitHub Release по тегу и публикуется как GitHub Pages site из ветки `main`.
 
 ## Правила совместимости
 

@@ -1,13 +1,5 @@
 version: v2
 
-managed:
-  enabled: true
-  override:
-    - file_option: go_package
-      value: github.com/company/service-api/gen/go/{{.Dir}}
-    - file_option: java_package
-      value: com.company.serviceapi.{{.Dir}}
-
 plugins:
   - remote: buf.build/protocolbuffers/go:v1.36.0
     out: gen/go
@@ -19,19 +11,30 @@ plugins:
 
   - remote: buf.build/protocolbuffers/python:v28.2
     out: gen/python
+    include_imports: true
 
   - remote: buf.build/grpc/python:v1.66.0
     out: gen/python
+    include_imports: true
 
   - remote: buf.build/protocolbuffers/java:v28.2
     out: gen/java
+    include_imports: true
 
   - remote: buf.build/grpc/java:v1.66.0
     out: gen/java
+    include_imports: true
 
-  - remote: buf.build/community/ts-proto:v2.2.0
+  - remote: buf.build/community/stephenh-ts-proto:v2.2.0
     out: gen/typescript
     opt:
       - outputServices=grpc-js
       - outputClientImpl=grpc-js
       - useExactTypes=false
+
+  - remote: buf.build/grpc-ecosystem/openapiv2:v2.19.0
+    out: gen/openapi
+    opt:
+      - json_names_for_fields=true
+      - allow_merge=true
+      - merge_file_name=api

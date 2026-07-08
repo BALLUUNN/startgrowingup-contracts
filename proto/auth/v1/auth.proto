@@ -1,0 +1,532 @@
+syntax = "proto3";
+
+package auth.v1;
+
+import "google/api/annotations.proto";
+import "google/api/field_behavior.proto";
+import "google/protobuf/timestamp.proto";
+import "protoc-gen-openapiv2/options/annotations.proto";
+
+option go_package = "github.com/BALLUUNN/startgrowingup-contracts/gen/go/auth/v1;authv1";
+option java_multiple_files = true;
+option java_package = "com.balluunn.startgrowingup.auth.v1";
+option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_swagger) = {
+  info: {
+    title: "StartGrowingUp Auth API"
+    version: "v1"
+    description: "Production auth contract. Protected RPCs authenticate with an Authorization: Bearer <token> header."
+  }
+  schemes: HTTPS
+  consumes: "application/json"
+  produces: "application/json"
+  security_definitions: {
+    security: {
+      key: "BearerAuth"
+      value: {
+        type: TYPE_API_KEY
+        description: "Bearer access token passed as Authorization: Bearer <token>."
+        name: "Authorization"
+        in: IN_HEADER
+      }
+    }
+  }
+};
+
+// AuthService defines public authentication and account-verification flows.
+// Protected RPCs require caller identity from Authorization header or gRPC metadata.
+service AuthService {
+  // Starts the registration flow and sends a verification code to the phone number.
+  // Validation failures should be returned via INVALID_ARGUMENT.
+  // Duplicate principals should be returned via ALREADY_EXISTS.
+  rpc StartRegistration(StartRegistrationRequest) returns (StartRegistrationResponse) {
+    option (google.api.http) = {
+      post: "/v1/auth/registrations:start"
+      body: "*"
+    };
+  }
+
+  // Confirms the registration code and creates a new authenticated session.
+  // Invalid or expired codes should be returned via FAILED_PRECONDITION or UNAUTHENTICATED.
+  rpc VerifyRegistration(VerifyRegistrationRequest) returns (VerifyRegistrationResponse) {
+    option (google.api.http) = {
+      post: "/v1/auth/registrations:verify"
+      body: "*"
+    };
+  }
+
+  // Resends the registration verification code for an active challenge.
+  // Rate limiting should be returned via RESOURCE_EXHAUSTED.
+  rpc ResendRegistrationCode(ResendRegistrationCodeRequest) returns (ResendRegistrationCodeResponse) {
+    option (google.api.http) = {
+      post: "/v1/auth/registrations:resend-code"
+      body: "*"
+    };
+  }
+
+  // Starts the login flow and sends a second-factor verification code.
+  // Invalid credentials should be returned via UNAUTHENTICATED.
+  rpc StartLogin(StartLoginRequest) returns (StartLoginResponse) {
+    option (google.api.http) = {
+      post: "/v1/auth/sessions:start"
+      body: "*"
+    };
+  }
+
+  // Confirms the login code and issues a new authenticated session.
+  rpc VerifyLogin(VerifyLoginRequest) returns (VerifyLoginResponse) {
+    option (google.api.http) = {
+      post: "/v1/auth/sessions:verify"
+      body: "*"
+    };
+  }
+
+  // Resends the second-factor login code for an active challenge.
+  rpc ResendLoginCode(ResendLoginCodeRequest) returns (ResendLoginCodeResponse) {
+    option (google.api.http) = {
+      post: "/v1/auth/sessions:resend-code"
+      body: "*"
+    };
+  }
+
+  // Starts email verification for the authenticated principal.
+  // The caller must authenticate via Authorization header or gRPC metadata.
+  rpc StartEmailVerification(StartEmailVerificationRequest) returns (StartEmailVerificationResponse) {
+    option (google.api.http) = {
+      post: "/v1/auth/email-verifications:start"
+      body: "*"
+    };
+    option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_operation) = {
+      security: {
+        security_requirement: {
+          key: "BearerAuth"
+          value: {}
+        }
+      }
+    };
+  }
+
+  // Confirms email verification for the authenticated principal.
+  // The caller must authenticate via Authorization header or gRPC metadata.
+  rpc ConfirmEmailVerification(ConfirmEmailVerificationRequest) returns (ConfirmEmailVerificationResponse) {
+    option (google.api.http) = {
+      post: "/v1/auth/email-verifications:confirm"
+      body: "*"
+    };
+    option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_operation) = {
+      security: {
+        security_requirement: {
+          key: "BearerAuth"
+          value: {}
+        }
+      }
+    };
+  }
+
+  // Resends a new email verification code for an active challenge.
+  // The caller must authenticate via Authorization header or gRPC metadata.
+  rpc ResendEmailVerificationCode(ResendEmailVerificationCodeRequest) returns (ResendEmailVerificationCodeResponse) {
+    option (google.api.http) = {
+      post: "/v1/auth/email-verifications:resend-code"
+      body: "*"
+    };
+    option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_operation) = {
+      security: {
+        security_requirement: {
+          key: "BearerAuth"
+          value: {}
+        }
+      }
+    };
+  }
+
+  // Starts a phone number change flow for the authenticated principal.
+  // The caller must authenticate via Authorization header or gRPC metadata.
+  rpc StartPhoneChange(StartPhoneChangeRequest) returns (StartPhoneChangeResponse) {
+    option (google.api.http) = {
+      post: "/v1/auth/phone-changes:start"
+      body: "*"
+    };
+    option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_operation) = {
+      security: {
+        security_requirement: {
+          key: "BearerAuth"
+          value: {}
+        }
+      }
+    };
+  }
+
+  // Confirms the phone number change for the authenticated principal.
+  // The caller must authenticate via Authorization header or gRPC metadata.
+  rpc ConfirmPhoneChange(ConfirmPhoneChangeRequest) returns (ConfirmPhoneChangeResponse) {
+    option (google.api.http) = {
+      post: "/v1/auth/phone-changes:confirm"
+      body: "*"
+    };
+    option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_operation) = {
+      security: {
+        security_requirement: {
+          key: "BearerAuth"
+          value: {}
+        }
+      }
+    };
+  }
+
+  // Resends the phone change verification code for an active challenge.
+  // The caller must authenticate via Authorization header or gRPC metadata.
+  rpc ResendPhoneChangeCode(ResendPhoneChangeCodeRequest) returns (ResendPhoneChangeCodeResponse) {
+    option (google.api.http) = {
+      post: "/v1/auth/phone-changes:resend-code"
+      body: "*"
+    };
+    option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_operation) = {
+      security: {
+        security_requirement: {
+          key: "BearerAuth"
+          value: {}
+        }
+      }
+    };
+  }
+
+  // Rotates session credentials using a valid refresh token.
+  // Invalid or revoked tokens should be returned via UNAUTHENTICATED.
+  rpc RefreshSession(RefreshSessionRequest) returns (RefreshSessionResponse) {
+    option (google.api.http) = {
+      post: "/v1/auth/sessions:refresh"
+      body: "*"
+    };
+  }
+
+  // Terminates the caller's currently authenticated session.
+  // The caller must authenticate via Authorization header or gRPC metadata.
+  rpc Logout(LogoutRequest) returns (LogoutResponse) {
+    option (google.api.http) = {
+      post: "/v1/auth/sessions:logout"
+      body: "*"
+    };
+    option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_operation) = {
+      security: {
+        security_requirement: {
+          key: "BearerAuth"
+          value: {}
+        }
+      }
+    };
+  }
+
+  // Starts a password reset flow and sends a recovery code to the phone number.
+  // For privacy, the server should avoid disclosing whether the account exists.
+  rpc StartPasswordReset(StartPasswordResetRequest) returns (StartPasswordResetResponse) {
+    option (google.api.http) = {
+      post: "/v1/auth/password-resets:start"
+      body: "*"
+    };
+  }
+
+  // Confirms a password reset using the recovery code and creates a fresh session.
+  rpc ConfirmPasswordReset(ConfirmPasswordResetRequest) returns (ConfirmPasswordResetResponse) {
+    option (google.api.http) = {
+      post: "/v1/auth/password-resets:confirm"
+      body: "*"
+    };
+  }
+
+  // Resends a password recovery code for an active challenge.
+  rpc ResendPasswordResetCode(ResendPasswordResetCodeRequest) returns (ResendPasswordResetCodeResponse) {
+    option (google.api.http) = {
+      post: "/v1/auth/password-resets:resend-code"
+      body: "*"
+    };
+  }
+}
+
+// ---------- Main messages ----------
+
+// User contains the public account profile returned by auth flows.
+message User {
+  // Immutable unique user identifier in the service storage.
+  string id = 1;
+  // Unique display or login name selected by the user.
+  string username = 2;
+  // Primary phone number in E.164 format, for example +14155550123.
+  string phone_number = 3;
+  // Primary email address in normalized lowercase form when available.
+  optional string email = 4;
+  // Indicates whether the current phone number has been verified.
+  optional bool phone_verified = 5;
+  // Indicates whether the current email address has been verified.
+  optional bool email_verified = 6;
+  // Indicates whether the account is active and allowed to sign in.
+  optional bool active = 7;
+  // Account creation timestamp in UTC.
+  google.protobuf.Timestamp created_at = 8;
+  // Last profile or status update timestamp in UTC.
+  google.protobuf.Timestamp updated_at = 9;
+}
+
+// SessionTokens contains issued bearer credentials and their expiration timestamps.
+message SessionTokens {
+  // Short-lived bearer token used for authenticated API calls.
+  string access_token = 1;
+  // Long-lived token used only to obtain a new access token pair.
+  string refresh_token = 2;
+  // Token scheme name, typically "Bearer".
+  string token_type = 3;
+  // Access token expiration timestamp in UTC.
+  google.protobuf.Timestamp access_token_expires_at = 4;
+  // Refresh token expiration timestamp in UTC.
+  google.protobuf.Timestamp refresh_token_expires_at = 5;
+}
+
+// AuthSession represents a successful authenticated session bootstrap response.
+message AuthSession {
+  // Authenticated user profile bound to the issued credentials.
+  User user = 1;
+  // Newly issued tokens for the authenticated session.
+  SessionTokens tokens = 2;
+}
+
+// VerificationChallenge describes a pending out-of-band verification step.
+message VerificationChallenge {
+  // Opaque challenge identifier used in follow-up confirm or resend RPCs.
+  string challenge_id = 1;
+  // Timestamp in UTC when the current verification code becomes invalid.
+  google.protobuf.Timestamp expires_at = 2;
+  // Earliest UTC timestamp when another code resend is allowed.
+  google.protobuf.Timestamp resend_available_at = 3;
+}
+
+// ---------- Registration requests and responses ----------
+
+// StartRegistrationRequest starts user registration and code delivery.
+message StartRegistrationRequest {
+  // Phone number in E.164 format, required, 7 to 15 digits after the plus sign.
+  string phone_number = 1 [(google.api.field_behavior) = REQUIRED];
+  // Desired username, required, should be unique within the auth domain.
+  string username = 2 [(google.api.field_behavior) = REQUIRED];
+  // Plaintext password over TLS, required, validated and hashed server-side.
+  string password = 3 [(google.api.field_behavior) = REQUIRED];
+}
+
+// StartRegistrationResponse returns the challenge for the registration flow.
+message StartRegistrationResponse {
+  // Pending verification challenge for the created registration attempt.
+  VerificationChallenge challenge = 1;
+}
+
+// VerifyRegistrationRequest confirms registration ownership with an out-of-band code.
+message VerifyRegistrationRequest {
+  // Challenge identifier returned by StartRegistration.
+  string challenge_id = 1 [(google.api.field_behavior) = REQUIRED];
+  // Verification code delivered to the user, required, typically numeric and short-lived.
+  string code = 2 [(google.api.field_behavior) = REQUIRED];
+}
+
+// VerifyRegistrationResponse returns a fully authenticated session after confirmation.
+message VerifyRegistrationResponse {
+  // Authenticated session created for the newly registered user.
+  AuthSession session = 1;
+}
+
+// ResendRegistrationCodeRequest requests another registration verification code.
+message ResendRegistrationCodeRequest {
+  // Active registration challenge identifier.
+  string challenge_id = 1 [(google.api.field_behavior) = REQUIRED];
+}
+
+// ResendRegistrationCodeResponse returns refreshed challenge timing metadata.
+message ResendRegistrationCodeResponse {
+  // Updated challenge with new expiration and resend timing information.
+  VerificationChallenge challenge = 1;
+}
+
+// ---------- Login requests and responses ----------
+
+// StartLoginRequest starts primary credential authentication and second-factor delivery.
+message StartLoginRequest {
+  // Registered phone number in E.164 format.
+  string phone_number = 1 [(google.api.field_behavior) = REQUIRED];
+  // Plaintext password over TLS validated against the stored credential hash.
+  string password = 2 [(google.api.field_behavior) = REQUIRED];
+}
+
+// StartLoginResponse returns the second-factor verification challenge.
+message StartLoginResponse {
+  // Pending challenge for the login verification step.
+  VerificationChallenge challenge = 1;
+}
+
+// VerifyLoginRequest confirms the login challenge code.
+message VerifyLoginRequest {
+  // Challenge identifier returned by StartLogin.
+  string challenge_id = 1 [(google.api.field_behavior) = REQUIRED];
+  // Second-factor code delivered to the user.
+  string code = 2 [(google.api.field_behavior) = REQUIRED];
+}
+
+// VerifyLoginResponse returns the authenticated session after second-factor confirmation.
+message VerifyLoginResponse {
+  // Authenticated session created for the successfully signed-in user.
+  AuthSession session = 1;
+}
+
+// ResendLoginCodeRequest requests a fresh second-factor code for login.
+message ResendLoginCodeRequest {
+  // Active login challenge identifier.
+  string challenge_id = 1 [(google.api.field_behavior) = REQUIRED];
+}
+
+// ResendLoginCodeResponse returns updated challenge timing metadata.
+message ResendLoginCodeResponse {
+  // Updated challenge with new verification timing fields.
+  VerificationChallenge challenge = 1;
+}
+
+// ---------- Email verification requests and responses ----------
+
+// StartEmailVerificationRequest starts ownership verification for the caller's email.
+message StartEmailVerificationRequest {
+  // Email address in normalized form, required, validated server-side.
+  string email = 1 [(google.api.field_behavior) = REQUIRED];
+}
+
+// StartEmailVerificationResponse returns the created email verification challenge.
+message StartEmailVerificationResponse {
+  // Pending challenge used to confirm email ownership.
+  VerificationChallenge challenge = 1;
+}
+
+// ConfirmEmailVerificationRequest confirms ownership of the requested email address.
+message ConfirmEmailVerificationRequest {
+  // Challenge identifier returned by StartEmailVerification.
+  string challenge_id = 1 [(google.api.field_behavior) = REQUIRED];
+  // Verification code delivered to the email address.
+  string code = 2 [(google.api.field_behavior) = REQUIRED];
+}
+
+// ConfirmEmailVerificationResponse returns the updated user profile.
+message ConfirmEmailVerificationResponse {
+  // User profile after applying the verified email status.
+  User user = 1;
+}
+
+// ResendEmailVerificationCodeRequest requests another email verification code.
+message ResendEmailVerificationCodeRequest {
+  // Active email verification challenge identifier.
+  string challenge_id = 1 [(google.api.field_behavior) = REQUIRED];
+}
+
+// ResendEmailVerificationCodeResponse returns updated challenge timing metadata.
+message ResendEmailVerificationCodeResponse {
+  // Updated challenge with refreshed expiration and resend timing.
+  VerificationChallenge challenge = 1;
+}
+
+// ---------- Phone change requests and responses ----------
+
+// StartPhoneChangeRequest starts verification of a replacement phone number.
+message StartPhoneChangeRequest {
+  // New phone number in E.164 format to bind to the authenticated user.
+  string new_phone_number = 1 [(google.api.field_behavior) = REQUIRED];
+}
+
+// StartPhoneChangeResponse returns the challenge for the phone replacement flow.
+message StartPhoneChangeResponse {
+  // Pending challenge for proving ownership of the new phone number.
+  VerificationChallenge challenge = 1;
+}
+
+// ConfirmPhoneChangeRequest confirms the replacement phone number.
+message ConfirmPhoneChangeRequest {
+  // Challenge identifier returned by StartPhoneChange.
+  string challenge_id = 1 [(google.api.field_behavior) = REQUIRED];
+  // Verification code delivered to the proposed new phone number.
+  string code = 2 [(google.api.field_behavior) = REQUIRED];
+}
+
+// ConfirmPhoneChangeResponse returns the updated user profile.
+message ConfirmPhoneChangeResponse {
+  // User profile after the phone number change is committed.
+  User user = 1;
+}
+
+// ResendPhoneChangeCodeRequest requests another verification code for phone replacement.
+message ResendPhoneChangeCodeRequest {
+  // Active phone-change challenge identifier.
+  string challenge_id = 1 [(google.api.field_behavior) = REQUIRED];
+}
+
+// ResendPhoneChangeCodeResponse returns updated challenge timing metadata.
+message ResendPhoneChangeCodeResponse {
+  // Updated challenge with refreshed expiration and resend timing.
+  VerificationChallenge challenge = 1;
+}
+
+// ---------- Session refresh and logout requests and responses ----------
+
+// RefreshSessionRequest requests a rotated token pair from a valid refresh token.
+message RefreshSessionRequest {
+  // Refresh token issued by a previous successful auth flow.
+  string refresh_token = 1 [(google.api.field_behavior) = REQUIRED];
+}
+
+// RefreshSessionResponse returns the rotated token pair.
+message RefreshSessionResponse {
+  // Fresh access and refresh tokens for the active user session.
+  SessionTokens tokens = 1;
+}
+
+// LogoutRequest terminates the caller's currently authenticated session.
+// The session is identified by the access token in the Authorization header.
+message LogoutRequest {}
+
+// LogoutResponse acknowledges that the session termination request was accepted.
+message LogoutResponse {}
+
+// ---------- Password reset requests and responses ----------
+
+// StartPasswordResetRequest starts account recovery without disclosing account existence.
+message StartPasswordResetRequest {
+  // Account phone number in E.164 format for password recovery.
+  string phone_number = 1 [(google.api.field_behavior) = REQUIRED];
+}
+
+// StartPasswordResetResponse returns the recovery challenge metadata.
+message StartPasswordResetResponse {
+  // Pending challenge for the password reset confirmation step.
+  VerificationChallenge challenge = 1;
+}
+
+// ConfirmPasswordResetRequest resets the password after proving account ownership.
+// Field 1 (phone_number) is reserved permanently, as it was removed.
+message ConfirmPasswordResetRequest {
+  reserved 1;
+  reserved "phone_number";
+
+  // Recovery code delivered out of band to the account owner.
+  string code = 2 [(google.api.field_behavior) = REQUIRED];
+  // New plaintext password over TLS that replaces the previous credential.
+  string new_password = 3 [(google.api.field_behavior) = REQUIRED];
+  // Challenge identifier returned by StartPasswordReset.
+  string challenge_id = 4 [(google.api.field_behavior) = REQUIRED];
+}
+
+// ConfirmPasswordResetResponse returns a new authenticated session after reset.
+message ConfirmPasswordResetResponse {
+  // Authenticated session issued after successful password reset.
+  AuthSession session = 1;
+}
+
+// ResendPasswordResetCodeRequest requests another password recovery code.
+message ResendPasswordResetCodeRequest {
+  // Active password reset challenge identifier.
+  string challenge_id = 1 [(google.api.field_behavior) = REQUIRED];
+}
+
+// ResendPasswordResetCodeResponse returns updated challenge timing metadata.
+message ResendPasswordResetCodeResponse {
+  // Updated challenge with refreshed expiration and resend timing.
+  VerificationChallenge challenge = 1;
+}

@@ -1,16 +1,14 @@
 version: v2
 
 modules:
-  - path: proto               
-    # name: buf.build/ 
+  - path: proto
 
 deps:
   - buf.build/googleapis/googleapis
-
+  - buf.build/grpc-ecosystem/grpc-gateway
 lint:
   use:
     - STANDARD
-    - BASIC
     - COMMENTS
   disallow_comment_ignores: true
   enum_zero_value_suffix: _NONE
@@ -18,9 +16,6 @@ lint:
   rpc_allow_google_protobuf_empty_requests: false
   rpc_allow_google_protobuf_empty_responses: false
   service_suffix: Service
-
-  # ignore:
-  #   - proto/internal   
 
 breaking:
   use:

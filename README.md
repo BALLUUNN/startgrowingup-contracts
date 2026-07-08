@@ -1,339 +1,106 @@
-# API-контракты StartGrowUp
+# StartGrowingUp Contracts
 
+Репозиторий `BALLUUNN/startgrowingup-contracts` хранит protobuf-контракты и generated outputs для сервисов и клиентов StartGrowingUp.
 
-<!--
-![CI](https://img.shields.io/github/actions/workflow/status/company/service-api/ci.yml)
-![License](https://img.shields.io/github/license/BALLUUNN/StartGrowUp)
-![Release](https://img.shields.io/github/v/release/company/service-api)
--->
+## Что внутри
 
-> Репозиторий содержит определения Protocol Buffers (`.proto`) и сгенерированный код для взаимодействия между сервисами.
+- исходные `.proto`-контракты в `proto/`;
+- конфигурация генерации и проверки через `buf`;
+- generated code для Go, Python, Java и TypeScript;
+- OpenAPI-артефакт, собранный из protobuf-аннотаций;
+- документация по стилю и процессу внесения изменений.
 
----
+Сейчас в репозитории опубликован домен `auth/v1`.
 
-# О репозитории
-
-Данный репозиторий является **единым источником истины (Single Source of Truth)** для API-контрактов сервиса.
-
-В репозитории хранятся:
-
-- protobuf-контракты;
-- gRPC-сервисы;
-- общие сообщения и структуры данных;
-- сгенерированный код для поддерживаемых языков;
-- конфигурация генерации (`buf`);
-- конфигурация проверки совместимости API.
-
-Использование единого репозитория гарантирует одинаковые версии контрактов для всех сервисов и исключает расхождения между клиентами.
-
----
-
-# Структура репозитория
+## Структура
 
 ```text
 .
 ├── proto/
-│   ├── auth/
-│   │   └── v1/
-│   │       ├── auth.proto
-│   │       └── session.proto
-│   │
-│   ├── user/
-│   │   └── v1/
-│   │
-│   ├── search/
-│   │   └── v1/
-│   │
-│   ├── payment/
-│   │   └── v1/
-│   │
-│   └── common/
-│       ├── errors.proto
-│       ├── pagination.proto
-│       └── metadata.proto
-│
+│   └── auth/
+│       └── v1/
+│           ├── auth.proto
+│           └── README.md
 ├── gen/
 │   ├── go/
-│   ├── python/
 │   ├── java/
+│   ├── openapi/
+│   ├── python/
 │   └── typescript/
-│
 ├── buf.yaml
 ├── buf.gen.yaml
 ├── Makefile
 ├── README.md
 ├── CONTRIBUTING.md
-└── STYLEGUIDE.md
+├── STYLE.md
+└── CHANGELOG.md
 ```
 
-Каждый бизнес-домен располагается в собственной директории и имеет независимые версии API.
+## Локальная работа
 
----
-
-# Поддерживаемые языки
-
-На данный момент автоматически генерируется код для:
-
-| Язык | Поддержка |
-|------|-----------|
-| Go | ✅ |
-| Python | ✅ |
-| Java | ✅ |
-| TypeScript | ✅ |
-
----
-
-# Генерация кода
-
-Для генерации используется **Buf**.
-
-Конфигурация генерации находится в файле
-
-```text
-buf.gen.yaml
-```
-
-Генерация:
+Основные команды:
 
 ```bash
+make format
 make generate
+make test-go
+make verify
 ```
 
-или
+Аналоги через `buf`:
 
 ```bash
+buf format -w
+buf lint
+buf breaking --against 'https://github.com/BALLUUNN/startgrowingup-contracts.git#branch=main'
 buf generate
 ```
 
-После генерации запрещается изменять файлы внутри `gen/` вручную.
+Файлы в `gen/` не редактируются вручную.
 
----
+## Generated outputs
 
-# Проверка protobuf
+После `buf generate` обновляются:
 
-Проверка оформления:
+- `gen/go/auth/v1`
+- `gen/python/auth/v1`
+- `gen/java/com/balluunn/startgrowingup/auth/v1`
+- `gen/typescript/auth/v1`
+- `gen/openapi/api.swagger.json`
 
-```bash
-buf lint
-```
+## Использование
 
-Проверка обратной совместимости относительно основной ветки:
-
-```bash
-buf breaking \
-  --against 'https://github.com/company/service-api.git#branch=main'
-```
-
-Все проверки должны успешно проходить перед созданием Pull Request.
-
----
-
-# Использование
-
-## Go
+### Go
 
 ```bash
-go get github.com/company/service-api
+go get github.com/BALLUUNN/startgrowingup-contracts
 ```
 
 ```go
-import pb "github.com/company/service-api/gen/go/auth/v1"
+import authv1 "github.com/BALLUUNN/startgrowingup-contracts/gen/go/auth/v1"
 ```
 
----
+### Python
 
-## Python
+Python bindings лежат в `gen/python`. Для импорта нужен установленный runtime `protobuf`, а также зависимости generated-кода.
 
-```bash
-pip install company-service-api
-```
+### Java
 
-```python
-from auth.v1 import auth_pb2
-```
+Java bindings лежат в `gen/java/com/balluunn/startgrowingup/auth/v1`.
 
----
+### TypeScript
 
-## Java
+TypeScript bindings лежат в `gen/typescript/auth/v1` и рассчитаны на `@grpc/grpc-js`.
 
-Подключите опубликованный артефакт через Maven или Gradle.
+## Правила совместимости
 
----
+- Внутри текущей версии API нельзя менять `package`, номер поля или тип поля.
+- Удаляемые поля сначала резервируются через `reserved`.
+- Несовместимые изменения публикуются в новой версии, например `auth/v2`.
 
-## TypeScript
+## Документация
 
-```bash
-npm install @company/service-api
-```
-
----
-
-## Git Submodule
-
-При необходимости репозиторий можно подключить как Git Submodule:
-
-```bash
-git submodule add git@github.com:company/service-api.git
-```
-
----
-
-# Публикация
-
-После выпуска новой версии автоматически публикуются:
-
-- Go Module;
-- Python Package;
-- npm Package;
-- Maven Artifact.
-
-Если проект является внутренним, публикация производится во внутренние корпоративные реестры.
-
----
-
-# Версионирование
-
-Используется Semantic Versioning.
-
-```
-MAJOR.MINOR.PATCH
-```
-
-Например:
-
-```
-v1.4.2
-```
-
-Каждый релиз сопровождается Git Tag.
-
----
-
-# Версии API
-
-Каждая несовместимая версия публикуется отдельно.
-
-Пример:
-
-```
-auth/v1
-auth/v2
-```
-
-Изменения, нарушающие совместимость, запрещены внутри одной версии API.
-
----
-
-# Обратная совместимость
-
-Допустимо:
-
-- добавление новых сообщений;
-- добавление новых RPC;
-- добавление новых optional-полей;
-- добавление enum-значений.
-
-Запрещено:
-
-- удалять поля;
-- менять тип поля;
-- менять номер поля;
-- переиспользовать номер удалённого поля;
-- менять protobuf package.
-
-При удалении поля необходимо использовать `reserved`.
-
-Пример:
-
-```proto
-message User {
-
-    reserved 5;
-    reserved "email";
-
-    string name = 1;
-
-}
-```
-
----
-
-# Политика релизов
-
-Каждый релиз включает:
-
-- protobuf-контракты;
-- сгенерированный код;
-- Git Tag;
-- Release Notes.
-
----
-
-# CI/CD
-
-При каждом Pull Request автоматически выполняются:
-
-- проверка форматирования protobuf;
-- `buf lint`;
-- `buf breaking`;
-- генерация кода;
-- проверка актуальности директории `gen/`;
-- запуск тестов генерации;
-- проверка отсутствия незакоммиченных изменений после генерации.
-
-Pull Request не может быть объединён, пока все проверки не завершатся успешно.
-
----
-
-# Процесс разработки
-
-1. Изменить `.proto`.
-2. Выполнить `buf lint`.
-3. Выполнить `buf breaking`.
-4. Сгенерировать код.
-5. Проверить изменения.
-6. Создать Pull Request.
-
----
-
-# Основные правила
-
-При работе с репозиторием необходимо соблюдать следующие требования:
-
-- не редактировать директорию `gen/`;
-- соблюдать обратную совместимость API;
-- документировать новые сервисы;
-- использовать общие protobuf-сообщения;
-- соблюдать STYLEGUIDE.
-
----
-
-# Документация
-
-Дополнительная документация находится в следующих файлах:
-
-- `CONTRIBUTING.md`
-- `STYLEGUIDE.md`
-- `CHANGELOG.md`
-
----
-
-# Безопасность
-
-Не допускается:
-
-- размещение секретов;
-- публикация внутренних API без необходимости;
-- хранение конфиденциальной информации в protobuf-контрактах.
-
----
-
-# Лицензия
-
-Лицензия проекта определяется политикой организации.
-
----
-
-# Поддержка
-
-При возникновении вопросов создайте Issue или обратитесь к сопровождающей команде проекта.
+- [CONTRIBUTING.md](CONTRIBUTING.md)
+- [STYLE.md](STYLE.md)
+- [proto/auth/v1/README.md](proto/auth/v1/README.md)
+- [CHANGELOG.md](CHANGELOG.md)

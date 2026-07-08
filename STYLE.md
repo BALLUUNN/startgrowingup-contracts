@@ -1,6 +1,6 @@
 # STYLE.md
 
-Руководство по стилю для репозитория API-контрактов StartGrowUp.
+Руководство по стилю для репозитория API-контрактов `BALLUUNN/startgrowingup-contracts`.
 
 Документ задает единые правила для `.proto`-файлов, общих сообщений, версионирования и генерации кода. Цель — сохранить репозиторий предсказуемым, совместимым и удобным для автоматической проверки.
 
@@ -305,7 +305,7 @@ syntax = "proto3";
 
 package auth.v1;
 
-option go_package = "github.com/company/service-api/gen/go/auth/v1;authv1";
+option go_package = "github.com/BALLUUNN/startgrowingup-contracts/gen/go/auth/v1;authv1";
 
 import "google/protobuf/timestamp.proto";
 import "google/protobuf/empty.proto";

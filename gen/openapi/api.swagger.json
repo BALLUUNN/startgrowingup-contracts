@@ -1,0 +1,1202 @@
+{
+  "swagger": "2.0",
+  "info": {
+    "title": "StartGrowingUp Auth API",
+    "description": "Production auth contract. Protected RPCs authenticate with an Authorization: Bearer \u003ctoken\u003e header.",
+    "version": "v1"
+  },
+  "tags": [
+    {
+      "name": "AuthService"
+    }
+  ],
+  "schemes": [
+    "https"
+  ],
+  "consumes": [
+    "application/json"
+  ],
+  "produces": [
+    "application/json"
+  ],
+  "paths": {
+    "/v1/auth/email-verifications:confirm": {
+      "post": {
+        "summary": "Confirms email verification for the authenticated principal.\nThe caller must authenticate via Authorization header or gRPC metadata.",
+        "operationId": "AuthService_ConfirmEmailVerification",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/v1ConfirmEmailVerificationResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/rpcStatus"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "body",
+            "description": "ConfirmEmailVerificationRequest confirms ownership of the requested email address.",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/v1ConfirmEmailVerificationRequest"
+            }
+          }
+        ],
+        "tags": [
+          "AuthService"
+        ],
+        "security": [
+          {
+            "BearerAuth": []
+          }
+        ]
+      }
+    },
+    "/v1/auth/email-verifications:resend-code": {
+      "post": {
+        "summary": "Resends a new email verification code for an active challenge.\nThe caller must authenticate via Authorization header or gRPC metadata.",
+        "operationId": "AuthService_ResendEmailVerificationCode",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/v1ResendEmailVerificationCodeResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/rpcStatus"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "body",
+            "description": "ResendEmailVerificationCodeRequest requests another email verification code.",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/v1ResendEmailVerificationCodeRequest"
+            }
+          }
+        ],
+        "tags": [
+          "AuthService"
+        ],
+        "security": [
+          {
+            "BearerAuth": []
+          }
+        ]
+      }
+    },
+    "/v1/auth/email-verifications:start": {
+      "post": {
+        "summary": "Starts email verification for the authenticated principal.\nThe caller must authenticate via Authorization header or gRPC metadata.",
+        "operationId": "AuthService_StartEmailVerification",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/v1StartEmailVerificationResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/rpcStatus"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "body",
+            "description": "StartEmailVerificationRequest starts ownership verification for the caller's email.",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/v1StartEmailVerificationRequest"
+            }
+          }
+        ],
+        "tags": [
+          "AuthService"
+        ],
+        "security": [
+          {
+            "BearerAuth": []
+          }
+        ]
+      }
+    },
+    "/v1/auth/password-resets:confirm": {
+      "post": {
+        "summary": "Confirms a password reset using the recovery code and creates a fresh session.",
+        "operationId": "AuthService_ConfirmPasswordReset",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/v1ConfirmPasswordResetResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/rpcStatus"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "body",
+            "description": "ConfirmPasswordResetRequest resets the password after proving account ownership.\nField 1 (phone_number) is reserved permanently, as it was removed.",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/v1ConfirmPasswordResetRequest"
+            }
+          }
+        ],
+        "tags": [
+          "AuthService"
+        ]
+      }
+    },
+    "/v1/auth/password-resets:resend-code": {
+      "post": {
+        "summary": "Resends a password recovery code for an active challenge.",
+        "operationId": "AuthService_ResendPasswordResetCode",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/v1ResendPasswordResetCodeResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/rpcStatus"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "body",
+            "description": "ResendPasswordResetCodeRequest requests another password recovery code.",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/v1ResendPasswordResetCodeRequest"
+            }
+          }
+        ],
+        "tags": [
+          "AuthService"
+        ]
+      }
+    },
+    "/v1/auth/password-resets:start": {
+      "post": {
+        "summary": "Starts a password reset flow and sends a recovery code to the phone number.\nFor privacy, the server should avoid disclosing whether the account exists.",
+        "operationId": "AuthService_StartPasswordReset",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/v1StartPasswordResetResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/rpcStatus"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "body",
+            "description": "StartPasswordResetRequest starts account recovery without disclosing account existence.",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/v1StartPasswordResetRequest"
+            }
+          }
+        ],
+        "tags": [
+          "AuthService"
+        ]
+      }
+    },
+    "/v1/auth/phone-changes:confirm": {
+      "post": {
+        "summary": "Confirms the phone number change for the authenticated principal.\nThe caller must authenticate via Authorization header or gRPC metadata.",
+        "operationId": "AuthService_ConfirmPhoneChange",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/v1ConfirmPhoneChangeResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/rpcStatus"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "body",
+            "description": "ConfirmPhoneChangeRequest confirms the replacement phone number.",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/v1ConfirmPhoneChangeRequest"
+            }
+          }
+        ],
+        "tags": [
+          "AuthService"
+        ],
+        "security": [
+          {
+            "BearerAuth": []
+          }
+        ]
+      }
+    },
+    "/v1/auth/phone-changes:resend-code": {
+      "post": {
+        "summary": "Resends the phone change verification code for an active challenge.\nThe caller must authenticate via Authorization header or gRPC metadata.",
+        "operationId": "AuthService_ResendPhoneChangeCode",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/v1ResendPhoneChangeCodeResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/rpcStatus"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "body",
+            "description": "ResendPhoneChangeCodeRequest requests another verification code for phone replacement.",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/v1ResendPhoneChangeCodeRequest"
+            }
+          }
+        ],
+        "tags": [
+          "AuthService"
+        ],
+        "security": [
+          {
+            "BearerAuth": []
+          }
+        ]
+      }
+    },
+    "/v1/auth/phone-changes:start": {
+      "post": {
+        "summary": "Starts a phone number change flow for the authenticated principal.\nThe caller must authenticate via Authorization header or gRPC metadata.",
+        "operationId": "AuthService_StartPhoneChange",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/v1StartPhoneChangeResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/rpcStatus"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "body",
+            "description": "StartPhoneChangeRequest starts verification of a replacement phone number.",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/v1StartPhoneChangeRequest"
+            }
+          }
+        ],
+        "tags": [
+          "AuthService"
+        ],
+        "security": [
+          {
+            "BearerAuth": []
+          }
+        ]
+      }
+    },
+    "/v1/auth/registrations:resend-code": {
+      "post": {
+        "summary": "Resends the registration verification code for an active challenge.\nRate limiting should be returned via RESOURCE_EXHAUSTED.",
+        "operationId": "AuthService_ResendRegistrationCode",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/v1ResendRegistrationCodeResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/rpcStatus"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "body",
+            "description": "ResendRegistrationCodeRequest requests another registration verification code.",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/v1ResendRegistrationCodeRequest"
+            }
+          }
+        ],
+        "tags": [
+          "AuthService"
+        ]
+      }
+    },
+    "/v1/auth/registrations:start": {
+      "post": {
+        "summary": "Starts the registration flow and sends a verification code to the phone number.\nValidation failures should be returned via INVALID_ARGUMENT.\nDuplicate principals should be returned via ALREADY_EXISTS.",
+        "operationId": "AuthService_StartRegistration",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/v1StartRegistrationResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/rpcStatus"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "body",
+            "description": "StartRegistrationRequest starts user registration and code delivery.",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/v1StartRegistrationRequest"
+            }
+          }
+        ],
+        "tags": [
+          "AuthService"
+        ]
+      }
+    },
+    "/v1/auth/registrations:verify": {
+      "post": {
+        "summary": "Confirms the registration code and creates a new authenticated session.\nInvalid or expired codes should be returned via FAILED_PRECONDITION or UNAUTHENTICATED.",
+        "operationId": "AuthService_VerifyRegistration",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/v1VerifyRegistrationResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/rpcStatus"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "body",
+            "description": "VerifyRegistrationRequest confirms registration ownership with an out-of-band code.",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/v1VerifyRegistrationRequest"
+            }
+          }
+        ],
+        "tags": [
+          "AuthService"
+        ]
+      }
+    },
+    "/v1/auth/sessions:logout": {
+      "post": {
+        "summary": "Terminates the caller's currently authenticated session.\nThe caller must authenticate via Authorization header or gRPC metadata.",
+        "operationId": "AuthService_Logout",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/v1LogoutResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/rpcStatus"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "body",
+            "description": "LogoutRequest terminates the caller's currently authenticated session.\nThe session is identified by the access token in the Authorization header.",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/v1LogoutRequest"
+            }
+          }
+        ],
+        "tags": [
+          "AuthService"
+        ],
+        "security": [
+          {
+            "BearerAuth": []
+          }
+        ]
+      }
+    },
+    "/v1/auth/sessions:refresh": {
+      "post": {
+        "summary": "Rotates session credentials using a valid refresh token.\nInvalid or revoked tokens should be returned via UNAUTHENTICATED.",
+        "operationId": "AuthService_RefreshSession",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/v1RefreshSessionResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/rpcStatus"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "body",
+            "description": "RefreshSessionRequest requests a rotated token pair from a valid refresh token.",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/v1RefreshSessionRequest"
+            }
+          }
+        ],
+        "tags": [
+          "AuthService"
+        ]
+      }
+    },
+    "/v1/auth/sessions:resend-code": {
+      "post": {
+        "summary": "Resends the second-factor login code for an active challenge.",
+        "operationId": "AuthService_ResendLoginCode",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/v1ResendLoginCodeResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/rpcStatus"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "body",
+            "description": "ResendLoginCodeRequest requests a fresh second-factor code for login.",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/v1ResendLoginCodeRequest"
+            }
+          }
+        ],
+        "tags": [
+          "AuthService"
+        ]
+      }
+    },
+    "/v1/auth/sessions:start": {
+      "post": {
+        "summary": "Starts the login flow and sends a second-factor verification code.\nInvalid credentials should be returned via UNAUTHENTICATED.",
+        "operationId": "AuthService_StartLogin",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/v1StartLoginResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/rpcStatus"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "body",
+            "description": "StartLoginRequest starts primary credential authentication and second-factor delivery.",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/v1StartLoginRequest"
+            }
+          }
+        ],
+        "tags": [
+          "AuthService"
+        ]
+      }
+    },
+    "/v1/auth/sessions:verify": {
+      "post": {
+        "summary": "Confirms the login code and issues a new authenticated session.",
+        "operationId": "AuthService_VerifyLogin",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/v1VerifyLoginResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/rpcStatus"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "body",
+            "description": "VerifyLoginRequest confirms the login challenge code.",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/v1VerifyLoginRequest"
+            }
+          }
+        ],
+        "tags": [
+          "AuthService"
+        ]
+      }
+    }
+  },
+  "definitions": {
+    "protobufAny": {
+      "type": "object",
+      "properties": {
+        "@type": {
+          "type": "string"
+        }
+      },
+      "additionalProperties": {}
+    },
+    "rpcStatus": {
+      "type": "object",
+      "properties": {
+        "code": {
+          "type": "integer",
+          "format": "int32"
+        },
+        "message": {
+          "type": "string"
+        },
+        "details": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "$ref": "#/definitions/protobufAny"
+          }
+        }
+      }
+    },
+    "v1AuthSession": {
+      "type": "object",
+      "properties": {
+        "user": {
+          "$ref": "#/definitions/v1User",
+          "description": "Authenticated user profile bound to the issued credentials."
+        },
+        "tokens": {
+          "$ref": "#/definitions/v1SessionTokens",
+          "description": "Newly issued tokens for the authenticated session."
+        }
+      },
+      "description": "AuthSession represents a successful authenticated session bootstrap response."
+    },
+    "v1ConfirmEmailVerificationRequest": {
+      "type": "object",
+      "properties": {
+        "challengeId": {
+          "type": "string",
+          "description": "Challenge identifier returned by StartEmailVerification."
+        },
+        "code": {
+          "type": "string",
+          "description": "Verification code delivered to the email address."
+        }
+      },
+      "description": "ConfirmEmailVerificationRequest confirms ownership of the requested email address.",
+      "required": [
+        "challengeId",
+        "code"
+      ]
+    },
+    "v1ConfirmEmailVerificationResponse": {
+      "type": "object",
+      "properties": {
+        "user": {
+          "$ref": "#/definitions/v1User",
+          "description": "User profile after applying the verified email status."
+        }
+      },
+      "description": "ConfirmEmailVerificationResponse returns the updated user profile."
+    },
+    "v1ConfirmPasswordResetRequest": {
+      "type": "object",
+      "properties": {
+        "code": {
+          "type": "string",
+          "description": "Recovery code delivered out of band to the account owner."
+        },
+        "newPassword": {
+          "type": "string",
+          "description": "New plaintext password over TLS that replaces the previous credential."
+        },
+        "challengeId": {
+          "type": "string",
+          "description": "Challenge identifier returned by StartPasswordReset."
+        }
+      },
+      "description": "ConfirmPasswordResetRequest resets the password after proving account ownership.\nField 1 (phone_number) is reserved permanently, as it was removed.",
+      "required": [
+        "code",
+        "newPassword",
+        "challengeId"
+      ]
+    },
+    "v1ConfirmPasswordResetResponse": {
+      "type": "object",
+      "properties": {
+        "session": {
+          "$ref": "#/definitions/v1AuthSession",
+          "description": "Authenticated session issued after successful password reset."
+        }
+      },
+      "description": "ConfirmPasswordResetResponse returns a new authenticated session after reset."
+    },
+    "v1ConfirmPhoneChangeRequest": {
+      "type": "object",
+      "properties": {
+        "challengeId": {
+          "type": "string",
+          "description": "Challenge identifier returned by StartPhoneChange."
+        },
+        "code": {
+          "type": "string",
+          "description": "Verification code delivered to the proposed new phone number."
+        }
+      },
+      "description": "ConfirmPhoneChangeRequest confirms the replacement phone number.",
+      "required": [
+        "challengeId",
+        "code"
+      ]
+    },
+    "v1ConfirmPhoneChangeResponse": {
+      "type": "object",
+      "properties": {
+        "user": {
+          "$ref": "#/definitions/v1User",
+          "description": "User profile after the phone number change is committed."
+        }
+      },
+      "description": "ConfirmPhoneChangeResponse returns the updated user profile."
+    },
+    "v1LogoutRequest": {
+      "type": "object",
+      "description": "LogoutRequest terminates the caller's currently authenticated session.\nThe session is identified by the access token in the Authorization header."
+    },
+    "v1LogoutResponse": {
+      "type": "object",
+      "description": "LogoutResponse acknowledges that the session termination request was accepted."
+    },
+    "v1RefreshSessionRequest": {
+      "type": "object",
+      "properties": {
+        "refreshToken": {
+          "type": "string",
+          "description": "Refresh token issued by a previous successful auth flow."
+        }
+      },
+      "description": "RefreshSessionRequest requests a rotated token pair from a valid refresh token.",
+      "required": [
+        "refreshToken"
+      ]
+    },
+    "v1RefreshSessionResponse": {
+      "type": "object",
+      "properties": {
+        "tokens": {
+          "$ref": "#/definitions/v1SessionTokens",
+          "description": "Fresh access and refresh tokens for the active user session."
+        }
+      },
+      "description": "RefreshSessionResponse returns the rotated token pair."
+    },
+    "v1ResendEmailVerificationCodeRequest": {
+      "type": "object",
+      "properties": {
+        "challengeId": {
+          "type": "string",
+          "description": "Active email verification challenge identifier."
+        }
+      },
+      "description": "ResendEmailVerificationCodeRequest requests another email verification code.",
+      "required": [
+        "challengeId"
+      ]
+    },
+    "v1ResendEmailVerificationCodeResponse": {
+      "type": "object",
+      "properties": {
+        "challenge": {
+          "$ref": "#/definitions/v1VerificationChallenge",
+          "description": "Updated challenge with refreshed expiration and resend timing."
+        }
+      },
+      "description": "ResendEmailVerificationCodeResponse returns updated challenge timing metadata."
+    },
+    "v1ResendLoginCodeRequest": {
+      "type": "object",
+      "properties": {
+        "challengeId": {
+          "type": "string",
+          "description": "Active login challenge identifier."
+        }
+      },
+      "description": "ResendLoginCodeRequest requests a fresh second-factor code for login.",
+      "required": [
+        "challengeId"
+      ]
+    },
+    "v1ResendLoginCodeResponse": {
+      "type": "object",
+      "properties": {
+        "challenge": {
+          "$ref": "#/definitions/v1VerificationChallenge",
+          "description": "Updated challenge with new verification timing fields."
+        }
+      },
+      "description": "ResendLoginCodeResponse returns updated challenge timing metadata."
+    },
+    "v1ResendPasswordResetCodeRequest": {
+      "type": "object",
+      "properties": {
+        "challengeId": {
+          "type": "string",
+          "description": "Active password reset challenge identifier."
+        }
+      },
+      "description": "ResendPasswordResetCodeRequest requests another password recovery code.",
+      "required": [
+        "challengeId"
+      ]
+    },
+    "v1ResendPasswordResetCodeResponse": {
+      "type": "object",
+      "properties": {
+        "challenge": {
+          "$ref": "#/definitions/v1VerificationChallenge",
+          "description": "Updated challenge with refreshed expiration and resend timing."
+        }
+      },
+      "description": "ResendPasswordResetCodeResponse returns updated challenge timing metadata."
+    },
+    "v1ResendPhoneChangeCodeRequest": {
+      "type": "object",
+      "properties": {
+        "challengeId": {
+          "type": "string",
+          "description": "Active phone-change challenge identifier."
+        }
+      },
+      "description": "ResendPhoneChangeCodeRequest requests another verification code for phone replacement.",
+      "required": [
+        "challengeId"
+      ]
+    },
+    "v1ResendPhoneChangeCodeResponse": {
+      "type": "object",
+      "properties": {
+        "challenge": {
+          "$ref": "#/definitions/v1VerificationChallenge",
+          "description": "Updated challenge with refreshed expiration and resend timing."
+        }
+      },
+      "description": "ResendPhoneChangeCodeResponse returns updated challenge timing metadata."
+    },
+    "v1ResendRegistrationCodeRequest": {
+      "type": "object",
+      "properties": {
+        "challengeId": {
+          "type": "string",
+          "description": "Active registration challenge identifier."
+        }
+      },
+      "description": "ResendRegistrationCodeRequest requests another registration verification code.",
+      "required": [
+        "challengeId"
+      ]
+    },
+    "v1ResendRegistrationCodeResponse": {
+      "type": "object",
+      "properties": {
+        "challenge": {
+          "$ref": "#/definitions/v1VerificationChallenge",
+          "description": "Updated challenge with new expiration and resend timing information."
+        }
+      },
+      "description": "ResendRegistrationCodeResponse returns refreshed challenge timing metadata."
+    },
+    "v1SessionTokens": {
+      "type": "object",
+      "properties": {
+        "accessToken": {
+          "type": "string",
+          "description": "Short-lived bearer token used for authenticated API calls."
+        },
+        "refreshToken": {
+          "type": "string",
+          "description": "Long-lived token used only to obtain a new access token pair."
+        },
+        "tokenType": {
+          "type": "string",
+          "description": "Token scheme name, typically \"Bearer\"."
+        },
+        "accessTokenExpiresAt": {
+          "type": "string",
+          "format": "date-time",
+          "description": "Access token expiration timestamp in UTC."
+        },
+        "refreshTokenExpiresAt": {
+          "type": "string",
+          "format": "date-time",
+          "description": "Refresh token expiration timestamp in UTC."
+        }
+      },
+      "description": "SessionTokens contains issued bearer credentials and their expiration timestamps."
+    },
+    "v1StartEmailVerificationRequest": {
+      "type": "object",
+      "properties": {
+        "email": {
+          "type": "string",
+          "description": "Email address in normalized form, required, validated server-side."
+        }
+      },
+      "description": "StartEmailVerificationRequest starts ownership verification for the caller's email.",
+      "required": [
+        "email"
+      ]
+    },
+    "v1StartEmailVerificationResponse": {
+      "type": "object",
+      "properties": {
+        "challenge": {
+          "$ref": "#/definitions/v1VerificationChallenge",
+          "description": "Pending challenge used to confirm email ownership."
+        }
+      },
+      "description": "StartEmailVerificationResponse returns the created email verification challenge."
+    },
+    "v1StartLoginRequest": {
+      "type": "object",
+      "properties": {
+        "phoneNumber": {
+          "type": "string",
+          "description": "Registered phone number in E.164 format."
+        },
+        "password": {
+          "type": "string",
+          "description": "Plaintext password over TLS validated against the stored credential hash."
+        }
+      },
+      "description": "StartLoginRequest starts primary credential authentication and second-factor delivery.",
+      "required": [
+        "phoneNumber",
+        "password"
+      ]
+    },
+    "v1StartLoginResponse": {
+      "type": "object",
+      "properties": {
+        "challenge": {
+          "$ref": "#/definitions/v1VerificationChallenge",
+          "description": "Pending challenge for the login verification step."
+        }
+      },
+      "description": "StartLoginResponse returns the second-factor verification challenge."
+    },
+    "v1StartPasswordResetRequest": {
+      "type": "object",
+      "properties": {
+        "phoneNumber": {
+          "type": "string",
+          "description": "Account phone number in E.164 format for password recovery."
+        }
+      },
+      "description": "StartPasswordResetRequest starts account recovery without disclosing account existence.",
+      "required": [
+        "phoneNumber"
+      ]
+    },
+    "v1StartPasswordResetResponse": {
+      "type": "object",
+      "properties": {
+        "challenge": {
+          "$ref": "#/definitions/v1VerificationChallenge",
+          "description": "Pending challenge for the password reset confirmation step."
+        }
+      },
+      "description": "StartPasswordResetResponse returns the recovery challenge metadata."
+    },
+    "v1StartPhoneChangeRequest": {
+      "type": "object",
+      "properties": {
+        "newPhoneNumber": {
+          "type": "string",
+          "description": "New phone number in E.164 format to bind to the authenticated user."
+        }
+      },
+      "description": "StartPhoneChangeRequest starts verification of a replacement phone number.",
+      "required": [
+        "newPhoneNumber"
+      ]
+    },
+    "v1StartPhoneChangeResponse": {
+      "type": "object",
+      "properties": {
+        "challenge": {
+          "$ref": "#/definitions/v1VerificationChallenge",
+          "description": "Pending challenge for proving ownership of the new phone number."
+        }
+      },
+      "description": "StartPhoneChangeResponse returns the challenge for the phone replacement flow."
+    },
+    "v1StartRegistrationRequest": {
+      "type": "object",
+      "properties": {
+        "phoneNumber": {
+          "type": "string",
+          "description": "Phone number in E.164 format, required, 7 to 15 digits after the plus sign."
+        },
+        "username": {
+          "type": "string",
+          "description": "Desired username, required, should be unique within the auth domain."
+        },
+        "password": {
+          "type": "string",
+          "description": "Plaintext password over TLS, required, validated and hashed server-side."
+        }
+      },
+      "description": "StartRegistrationRequest starts user registration and code delivery.",
+      "required": [
+        "phoneNumber",
+        "username",
+        "password"
+      ]
+    },
+    "v1StartRegistrationResponse": {
+      "type": "object",
+      "properties": {
+        "challenge": {
+          "$ref": "#/definitions/v1VerificationChallenge",
+          "description": "Pending verification challenge for the created registration attempt."
+        }
+      },
+      "description": "StartRegistrationResponse returns the challenge for the registration flow."
+    },
+    "v1User": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string",
+          "description": "Immutable unique user identifier in the service storage."
+        },
+        "username": {
+          "type": "string",
+          "description": "Unique display or login name selected by the user."
+        },
+        "phoneNumber": {
+          "type": "string",
+          "description": "Primary phone number in E.164 format, for example +14155550123."
+        },
+        "email": {
+          "type": "string",
+          "description": "Primary email address in normalized lowercase form when available."
+        },
+        "phoneVerified": {
+          "type": "boolean",
+          "description": "Indicates whether the current phone number has been verified."
+        },
+        "emailVerified": {
+          "type": "boolean",
+          "description": "Indicates whether the current email address has been verified."
+        },
+        "active": {
+          "type": "boolean",
+          "description": "Indicates whether the account is active and allowed to sign in."
+        },
+        "createdAt": {
+          "type": "string",
+          "format": "date-time",
+          "description": "Account creation timestamp in UTC."
+        },
+        "updatedAt": {
+          "type": "string",
+          "format": "date-time",
+          "description": "Last profile or status update timestamp in UTC."
+        }
+      },
+      "description": "User contains the public account profile returned by auth flows."
+    },
+    "v1VerificationChallenge": {
+      "type": "object",
+      "properties": {
+        "challengeId": {
+          "type": "string",
+          "description": "Opaque challenge identifier used in follow-up confirm or resend RPCs."
+        },
+        "expiresAt": {
+          "type": "string",
+          "format": "date-time",
+          "description": "Timestamp in UTC when the current verification code becomes invalid."
+        },
+        "resendAvailableAt": {
+          "type": "string",
+          "format": "date-time",
+          "description": "Earliest UTC timestamp when another code resend is allowed."
+        }
+      },
+      "description": "VerificationChallenge describes a pending out-of-band verification step."
+    },
+    "v1VerifyLoginRequest": {
+      "type": "object",
+      "properties": {
+        "challengeId": {
+          "type": "string",
+          "description": "Challenge identifier returned by StartLogin."
+        },
+        "code": {
+          "type": "string",
+          "description": "Second-factor code delivered to the user."
+        }
+      },
+      "description": "VerifyLoginRequest confirms the login challenge code.",
+      "required": [
+        "challengeId",
+        "code"
+      ]
+    },
+    "v1VerifyLoginResponse": {
+      "type": "object",
+      "properties": {
+        "session": {
+          "$ref": "#/definitions/v1AuthSession",
+          "description": "Authenticated session created for the successfully signed-in user."
+        }
+      },
+      "description": "VerifyLoginResponse returns the authenticated session after second-factor confirmation."
+    },
+    "v1VerifyRegistrationRequest": {
+      "type": "object",
+      "properties": {
+        "challengeId": {
+          "type": "string",
+          "description": "Challenge identifier returned by StartRegistration."
+        },
+        "code": {
+          "type": "string",
+          "description": "Verification code delivered to the user, required, typically numeric and short-lived."
+        }
+      },
+      "description": "VerifyRegistrationRequest confirms registration ownership with an out-of-band code.",
+      "required": [
+        "challengeId",
+        "code"
+      ]
+    },
+    "v1VerifyRegistrationResponse": {
+      "type": "object",
+      "properties": {
+        "session": {
+          "$ref": "#/definitions/v1AuthSession",
+          "description": "Authenticated session created for the newly registered user."
+        }
+      },
+      "description": "VerifyRegistrationResponse returns a fully authenticated session after confirmation."
+    }
+  },
+  "securityDefinitions": {
+    "BearerAuth": {
+      "type": "apiKey",
+      "description": "Bearer access token passed as Authorization: Bearer \u003ctoken\u003e.",
+      "name": "Authorization",
+      "in": "header"
+    }
+  }
+}

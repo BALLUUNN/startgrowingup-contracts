@@ -1,6 +1,6 @@
 # CONTRIBUTING.md
 
-Руководство для участников репозитория API-контрактов StartGrowUp.
+Руководство для участников репозитория API-контрактов `BALLUUNN/startgrowingup-contracts`.
 
 Цель этого файла — помочь быстро и безопасно вносить изменения в protobuf-контракты, не ломая совместимость и не нарушая правила генерации кода.
 
@@ -80,7 +80,7 @@
 ```bash
 buf format -w
 buf lint
-buf breaking --against 'https://github.com/company/service-api.git#branch=main'
+buf breaking --against 'https://github.com/BALLUUNN/startgrowingup-contracts.git#branch=main'
 buf generate
 ```
 

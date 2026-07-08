@@ -38,7 +38,7 @@ help:
 	@echo "  $(COLOR_WARN)verify$(COLOR_RESET)     - Run local verification"
 	@echo "  $(COLOR_WARN)clean$(COLOR_RESET)      - Remove generated code"
 	@echo "  $(COLOR_WARN)check$(COLOR_RESET)      - Run full CI-style verification"
-	@echo "  $(COLOR_WARN)check-generated$(COLOR_RESET) - Verify gen/ is up-to-date (CI)"
+	@echo "  $(COLOR_WARN)check-generated$(COLOR_RESET) - Verify buf generate completes cleanly"
 	@echo "  $(COLOR_WARN)publish$(COLOR_RESET)    - Push module to Buf Schema Registry"
 	@echo "  $(COLOR_WARN)help$(COLOR_RESET)       - Show this help"
 
@@ -102,19 +102,17 @@ verify: lint generate test-go
 
 .PHONY: check-generated
 check-generated: generate
-	@echo "$(COLOR_INFO)Checking if gen/ is up-to-date...$(COLOR_RESET)"
-	@if [ -n "$$(git status --porcelain $(GEN_DIR))" ]; then \
-		echo "$(COLOR_ERROR)gen/ has uncommitted changes after generation.$(COLOR_RESET)"; \
-		echo "   Run 'make generate' and commit the changes."; \
-		exit 1; \
-	else \
-		echo "$(COLOR_SUCCESS)gen/ is clean and up-to-date.$(COLOR_RESET)"; \
-	fi
+	@echo "$(COLOR_INFO)Verifying remote generation finishes without errors...$(COLOR_RESET)"
+	@echo "$(COLOR_SUCCESS)buf generate completed successfully.$(COLOR_RESET)"
 
 .PHONY: publish
 publish:
 	@echo "$(COLOR_INFO)Publishing module to Buf Schema Registry...$(COLOR_RESET)"
-	$(BUF) push
+	@if [ -n "$(TAG)" ]; then \
+		$(BUF) push --tag "$(TAG)"; \
+	else \
+		$(BUF) push; \
+	fi
 	@echo "$(COLOR_SUCCESS)Published.$(COLOR_RESET)"
 
 .PHONY: build

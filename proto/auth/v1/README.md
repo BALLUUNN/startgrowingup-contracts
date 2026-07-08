@@ -26,11 +26,7 @@
 
 ## Generated outputs
 
-- [gen/go/auth/v1](../../../gen/go/auth/v1)
-- [gen/python/auth/v1](../../../gen/python/auth/v1)
-- [gen/java/com/balluunn/startgrowingup/auth/v1](../../../gen/java/com/balluunn/startgrowingup/auth/v1)
-- [gen/typescript/auth/v1](../../../gen/typescript/auth/v1)
-- [gen/openapi/api.swagger.json](../../../gen/openapi/api.swagger.json)
+Этот контракт публикуется в BSR вместе с generated SDK. Для установки language-specific packages используйте корневой [README.md](../../../README.md) и вкладку `SDKs` в BSR, а не локальный каталог `gen/`.
 
 ## Проверка
 

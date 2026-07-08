@@ -1,0 +1,166 @@
+name: CI
+
+on:
+  pull_request:
+    branches: [main]
+  push:
+    branches: [main]
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ci-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  lint-and-breaking:
+    name: Lint & Breaking
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Setup Buf
+        uses: bufbuild/buf-setup-action@v1.50.0
+        with:
+          github_token: ${{ github.token }}
+
+      - name: Run buf lint
+        run: buf lint
+
+      - name: Run buf breaking
+        run: buf breaking --against 'https://github.com/${{ github.repository }}.git#branch=main'
+
+  generate:
+    name: Generate
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Buf
+        uses: bufbuild/buf-setup-action@v1.50.0
+        with:
+          github_token: ${{ github.token }}
+
+      - name: Generate code
+        run: buf generate
+
+  go-test:
+    name: Go Test
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Go
+        uses: actions/setup-go@v5
+        with:
+          go-version-file: go.mod
+
+      - name: Setup Buf
+        uses: bufbuild/buf-setup-action@v1.50.0
+        with:
+          github_token: ${{ github.token }}
+
+      - name: Generate code
+        run: buf generate
+
+      - name: Run go test
+        run: go test ./...
+
+  smoke-tests:
+    name: Smoke Tests (${{ matrix.language }})
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    strategy:
+      fail-fast: false
+      matrix:
+        language: [python, typescript, java]
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Buf
+        uses: bufbuild/buf-setup-action@v1.50.0
+        with:
+          github_token: ${{ github.token }}
+
+      - name: Generate code
+        run: buf generate
+
+      - name: Setup Python
+        if: matrix.language == 'python'
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Smoke Test Python
+        if: matrix.language == 'python'
+        run: |
+          python -m pip install --upgrade pip
+          python -m pip install protobuf
+          PYTHONPATH=gen/python python -c "import auth.v1.auth_pb2"
+
+      - name: Setup Node.js
+        if: matrix.language == 'typescript'
+        uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+
+      - name: Smoke Test TypeScript
+        if: matrix.language == 'typescript'
+        run: |
+          npm install --no-save typescript @bufbuild/protobuf @grpc/grpc-js @types/node
+          npx tsc --noEmit --module commonjs --moduleResolution node --target es2020 --lib es2020 --types node $(find gen/typescript -name "*.ts")
+
+      - name: Setup Java
+        if: matrix.language == 'java'
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: "17"
+
+      - name: Smoke Test Java
+        if: matrix.language == 'java'
+        run: |
+          cat <<'EOF' > /tmp/java-smoke-pom.xml
+          <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+                   xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
+            <modelVersion>4.0.0</modelVersion>
+            <groupId>ci.smoke</groupId>
+            <artifactId>generated-java-smoke</artifactId>
+            <version>1.0.0</version>
+            <dependencies>
+              <dependency>
+                <groupId>com.google.protobuf</groupId>
+                <artifactId>protobuf-java</artifactId>
+                <version>4.28.2</version>
+              </dependency>
+              <dependency>
+                <groupId>io.grpc</groupId>
+                <artifactId>grpc-protobuf</artifactId>
+                <version>1.66.0</version>
+              </dependency>
+              <dependency>
+                <groupId>io.grpc</groupId>
+                <artifactId>grpc-stub</artifactId>
+                <version>1.66.0</version>
+              </dependency>
+              <dependency>
+                <groupId>javax.annotation</groupId>
+                <artifactId>javax.annotation-api</artifactId>
+                <version>1.3.2</version>
+              </dependency>
+            </dependencies>
+          </project>
+          EOF
+          mvn -q -f /tmp/java-smoke-pom.xml dependency:build-classpath -Dmdep.outputFile=/tmp/java-smoke.classpath
+          mkdir -p /tmp/java-smoke-build
+          javac -cp "$(cat /tmp/java-smoke.classpath)" -d /tmp/java-smoke-build $(find gen/java -name "*.java")

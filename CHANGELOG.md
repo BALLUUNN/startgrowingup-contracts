@@ -7,6 +7,14 @@
 
 ---
 
+## [Unreleased]
+
+### Changed
+- Репозиторий переведен на BSR-first delivery model без хранения generated SDK в Git.
+- CI проверяет успешную генерацию и smoke-tests вместо diff по `gen/`.
+- Добавлен workflow публикации модуля в BSR по Git tags.
+- README и contributor docs обновлены под потребление SDK через BSR.
+
 ## [1.0.0] - 2025-04-07
 
 ### Added

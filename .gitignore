@@ -1,5 +1,6 @@
 /buf
 /.DS_Store
+/gen/
 # Binaries for programs and plugins
 *.exe
 *.exe~

@@ -1,0 +1,39 @@
+name: Publish BSR
+
+on:
+  push:
+    tags:
+      - "v*.*.*"
+
+permissions:
+  contents: read
+
+concurrency:
+  group: publish-bsr-${{ github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  publish:
+    name: Publish To BSR
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    env:
+      BUF_TOKEN: ${{ secrets.BUF_TOKEN }}
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Setup Buf
+        uses: bufbuild/buf-setup-action@v1.50.0
+        with:
+          github_token: ${{ github.token }}
+
+      - name: Verify schema before publish
+        run: |
+          buf lint
+          buf breaking --against "https://github.com/${{ github.repository }}.git#branch=main"
+
+      - name: Publish module to BSR
+        run: buf push --tag "${GITHUB_REF_NAME}"

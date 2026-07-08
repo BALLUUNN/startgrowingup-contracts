@@ -7,7 +7,7 @@
 
 ---
 
-## [Unreleased]
+## [Unreleased] - 2025-04-07
 
 ### Changed
 - Репозиторий переведен на BSR-first delivery model без хранения generated SDK в Git.

@@ -3,16 +3,18 @@ BUF_VERSION ?= 1.71.0
 GEN_DIR := gen
 BREAKING_BRANCH ?= main
 REPO_URL ?= https://github.com/BALLUUNN/startgrowingup-contracts.git
+GO ?= go
 PYTHON ?= python3
 NPM ?= npm
 JAVAC ?= javac
 MVN ?= mvn
 
 UNAME_S := $(shell uname -s)
+UNAME_M := $(shell uname -m)
 ifeq ($(UNAME_S),Linux)
-    BUF_DOWNLOAD_URL := https://github.com/bufbuild/buf/releases/download/$(BUF_VERSION)/buf-$(UNAME_S)-x86_64
+    BUF_DOWNLOAD_URL := https://github.com/bufbuild/buf/releases/download/v$(BUF_VERSION)/buf-$(UNAME_S)-$(UNAME_M)
 else ifeq ($(UNAME_S),Darwin)
-    BUF_DOWNLOAD_URL := https://github.com/bufbuild/buf/releases/download/$(BUF_VERSION)/buf-$(UNAME_S)-x86_64
+    BUF_DOWNLOAD_URL := https://github.com/bufbuild/buf/releases/download/v$(BUF_VERSION)/buf-$(UNAME_S)-$(UNAME_M)
 else
     $(error Unsupported OS: $(UNAME_S). Please install buf manually: https://buf.build/docs/installation)
 endif
@@ -34,6 +36,7 @@ help:
 	@echo "$(COLOR_INFO)Available targets:$(COLOR_RESET)"
 	@echo "  $(COLOR_WARN)all$(COLOR_RESET)        - Run the default verification flow"
 	@echo "  $(COLOR_WARN)setup$(COLOR_RESET)      - Install buf if not present"
+	@echo "  $(COLOR_WARN)doctor$(COLOR_RESET)     - Check local toolchain prerequisites"
 	@echo "  $(COLOR_WARN)format$(COLOR_RESET)     - Format proto files in place"
 	@echo "  $(COLOR_WARN)generate$(COLOR_RESET)   - Generate code from proto files"
 	@echo "  $(COLOR_WARN)lint$(COLOR_RESET)       - Lint proto files"
@@ -62,6 +65,33 @@ setup:
 	else \
 		echo "$(COLOR_SUCCESS)buf is already installed: $(BUF_INSTALLED)$(COLOR_RESET)"; \
 	fi
+
+.PHONY: doctor
+doctor:
+	@echo "$(COLOR_INFO)Checking local toolchain prerequisites...$(COLOR_RESET)"
+	@missing=0; \
+	check_exec() { \
+		name="$$1"; \
+		cmd="$$2"; \
+		if [ -x "$$cmd" ] || command -v "$$cmd" >/dev/null 2>&1; then \
+			resolved=$$(command -v "$$cmd" 2>/dev/null || printf '%s' "$$cmd"); \
+			echo "$(COLOR_SUCCESS)$$name: $$resolved$(COLOR_RESET)"; \
+		else \
+			echo "$(COLOR_ERROR)$$name missing: $$cmd$(COLOR_RESET)"; \
+			missing=1; \
+		fi; \
+	}; \
+	check_exec "buf" "$(BUF)"; \
+	check_exec "go" "$(GO)"; \
+	check_exec "python" "$(PYTHON)"; \
+	check_exec "npm" "$(NPM)"; \
+	check_exec "javac" "$(JAVAC)"; \
+	check_exec "maven" "$(MVN)"; \
+	if [ "$$missing" -ne 0 ]; then \
+		echo "$(COLOR_WARN)Install the missing tools or run narrower targets like make lint, make breaking, or make generate.$(COLOR_RESET)"; \
+		exit 1; \
+	fi; \
+	echo "$(COLOR_SUCCESS)Local toolchain is ready.$(COLOR_RESET)"
 
 .PHONY: generate
 generate:
@@ -98,12 +128,12 @@ clean:
 	@echo "$(COLOR_SUCCESS)Cleaned.$(COLOR_RESET)"
 
 .PHONY: check
-check: lint breaking test-generated
+check: doctor lint breaking test-generated
 
 .PHONY: test-go
 test-go:
 	@echo "$(COLOR_INFO)Compiling generated Go bindings...$(COLOR_RESET)"
-	go test ./gen/go/...
+	$(GO) test ./gen/go/...
 	@echo "$(COLOR_SUCCESS)Generated Go bindings compile successfully.$(COLOR_RESET)"
 
 .PHONY: test-python
@@ -207,7 +237,7 @@ test-generated:
 	@$(MAKE) test-openapi
 
 .PHONY: verify
-verify: lint test-generated
+verify: doctor lint test-generated
 
 .PHONY: check-generated
 check-generated: generate

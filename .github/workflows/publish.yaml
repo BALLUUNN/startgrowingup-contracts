@@ -12,6 +12,9 @@ concurrency:
   group: publish-bsr-${{ github.ref }}
   cancel-in-progress: false
 
+env:
+  BUF_VERSION: "1.71.0"
+
 jobs:
   publish:
     name: Publish To BSR
@@ -29,11 +32,22 @@ jobs:
         uses: bufbuild/buf-setup-action@v1.50.0
         with:
           github_token: ${{ github.token }}
+          version: ${{ env.BUF_VERSION }}
+
+      - name: Determine breaking baseline
+        id: breaking-baseline
+        shell: bash
+        run: |
+          if git rev-parse --verify "${GITHUB_SHA}^" >/dev/null 2>&1; then
+            echo "against=.git#ref=$(git rev-parse "${GITHUB_SHA}^")" >> "$GITHUB_OUTPUT"
+          else
+            echo "against=.git#branch=main" >> "$GITHUB_OUTPUT"
+          fi
 
       - name: Verify schema before publish
         run: |
           buf lint
-          buf breaking --against "https://github.com/${{ github.repository }}.git#branch=main"
+          buf breaking --against "${{ steps.breaking-baseline.outputs.against }}"
 
       - name: Publish module to BSR
         run: buf push --tag "${GITHUB_REF_NAME}"

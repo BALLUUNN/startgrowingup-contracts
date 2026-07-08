@@ -33,5 +33,14 @@
 Из корня репозитория:
 
 ```bash
+make doctor
 make verify
+```
+
+Если нужен только быстрый цикл проверки схемы без всех language smoke-тестов, используйте:
+
+```bash
+make lint
+make breaking
+make generate
 ```
